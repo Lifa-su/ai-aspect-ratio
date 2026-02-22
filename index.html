@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Aspect Ratio Calculator - Calculate, Convert & Preview Aspect Ratios</title>
+<meta name="description" content="Free online aspect ratio calculator. Calculate, simplify, and preview aspect ratios for video, images, and screens. Common presets, scale calculator, and resolution reference.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📐</text></svg>">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#242836;--border:#2e3348;--text:#e4e6f0;--text2:#9498b0;--accent:#6c5ce7;--accent2:#a29bfe;--green:#00cec9;--orange:#fdcb6e;--red:#ff7675;--radius:12px;--shadow:0 4px 24px rgba(0,0,0,.3)}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
+a{color:var(--accent2);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.container{max-width:1100px;margin:0 auto;padding:0 20px}
+header{text-align:center;padding:48px 20px 32px}
+header h1{font-size:2.2rem;font-weight:700;background:linear-gradient(135deg,var(--accent2),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+header p{color:var(--text2);font-size:1.05rem}
+
+.grid{display:grid;gap:24px;margin-bottom:32px}
+.grid-2{grid-template-columns:1fr 1fr}
+@media(max-width:768px){.grid-2{grid-template-columns:1fr}}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow)}
+.card h2{font-size:1.2rem;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card h2 span{font-size:1.4rem}
+
+label{display:block;font-size:.85rem;color:var(--text2);margin-bottom:6px;font-weight:500}
+input[type="number"],input[type="text"]{width:100%;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:1rem;outline:none;transition:border .2s}
+input:focus{border-color:var(--accent)}
+input::placeholder{color:#555a70}
+
+.input-row{display:flex;gap:12px;align-items:end}
+.input-row>div{flex:1}
+.x-label{display:flex;align-items:end;padding-bottom:12px;color:var(--text2);font-weight:700;font-size:1.2rem}
+
+.result-box{margin-top:16px;padding:16px;background:var(--surface2);border-radius:8px;text-align:center}
+.result-box .ratio{font-size:2rem;font-weight:700;color:var(--accent2)}
+.result-box .detail{font-size:.85rem;color:var(--text2);margin-top:4px}
+
+.presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.preset-btn{padding:8px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;font-size:.9rem;transition:all .2s;white-space:nowrap}
+.preset-btn:hover{border-color:var(--accent);background:rgba(108,92,231,.15)}
+.preset-btn.active{border-color:var(--accent);background:rgba(108,92,231,.2);color:var(--accent2)}
+
+.preview-container{display:flex;justify-content:center;align-items:center;min-height:200px;padding:20px;background:var(--surface2);border-radius:8px;margin-top:12px}
+.preview-rect{border:2px solid var(--accent2);border-radius:4px;background:rgba(108,92,231,.08);display:flex;align-items:center;justify-content:center;font-size:.85rem;color:var(--text2);transition:all .3s;position:relative;max-width:100%;max-height:200px}
+.preview-rect::after{content:attr(data-size);position:absolute;bottom:-22px;font-size:.75rem;color:var(--text2)}
+
+.scale-result{font-size:1.4rem;font-weight:700;color:var(--green);margin-top:8px}
+
+table{width:100%;border-collapse:collapse;font-size:.85rem;margin-top:12px}
+th{text-align:left;padding:10px 12px;background:var(--surface2);color:var(--text2);font-weight:600;border-bottom:1px solid var(--border);position:sticky;top:0}
+td{padding:9px 12px;border-bottom:1px solid var(--border)}
+tr:hover td{background:rgba(108,92,231,.05)}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.75rem;font-weight:600}
+.badge-video{background:rgba(108,92,231,.2);color:var(--accent2)}
+.badge-screen{background:rgba(0,206,201,.2);color:var(--green)}
+.badge-photo{background:rgba(253,203,110,.2);color:var(--orange)}
+.badge-social{background:rgba(255,118,117,.2);color:var(--red)}
+
+.tab-bar{display:flex;gap:4px;margin-bottom:16px;background:var(--surface2);border-radius:8px;padding:4px;overflow-x:auto}
+.tab-btn{padding:8px 16px;border:none;background:none;color:var(--text2);cursor:pointer;border-radius:6px;font-size:.85rem;white-space:nowrap;transition:all .2s}
+.tab-btn.active{background:var(--accent);color:#fff}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+.table-wrap{max-height:400px;overflow-y:auto;border-radius:8px;border:1px solid var(--border)}
+.table-wrap::-webkit-scrollbar{width:6px}
+.table-wrap::-webkit-scrollbar-track{background:var(--surface)}
+.table-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+footer{text-align:center;padding:40px 20px;color:var(--text2);font-size:.8rem;border-top:1px solid var(--border);margin-top:48px}
+footer a{color:var(--accent2)}
+
+.copy-btn{background:none;border:none;color:var(--text2);cursor:pointer;font-size:.85rem;padding:4px 8px;border-radius:4px;transition:all .2s}
+.copy-btn:hover{color:var(--accent2);background:rgba(108,92,231,.1)}
+
+@media(max-width:480px){
+  header h1{font-size:1.6rem}
+  .card{padding:16px}
+  .input-row{flex-direction:column;gap:8px}
+  .x-label{display:none}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📐 AI Aspect Ratio Calculator</h1>
+  <p>Calculate, simplify, scale, and preview aspect ratios instantly</p>
+</header>
+
+<div class="container">
+
+  <!-- Calculator + Preview -->
+  <div class="grid grid-2">
+    <div class="card">
+      <h2><span>🔢</span> Ratio Calculator</h2>
+      <div class="input-row">
+        <div>
+          <label for="calcW">Width</label>
+          <input type="number" id="calcW" placeholder="1920" min="1">
+        </div>
+        <div class="x-label">×</div>
+        <div>
+          <label for="calcH">Height</label>
+          <input type="number" id="calcH" placeholder="1080" min="1">
+        </div>
+      </div>
+      <div class="result-box" id="calcResult">
+        <div class="ratio" id="ratioDisplay">—</div>
+        <div class="detail" id="ratioDetail">Enter width and height to calculate</div>
+        <button class="copy-btn" id="copyRatio" style="margin-top:8px;display:none" onclick="copyRatio()">📋 Copy</button>
+      </div>
+
+      <h2 style="margin-top:24px"><span>⚡</span> Common Presets</h2>
+      <div class="presets" id="presets"></div>
+    </div>
+
+    <div class="card">
+      <h2><span>👁️</span> Visual Preview</h2>
+      <div class="preview-container" id="previewBox">
+        <div class="preview-rect" id="previewRect" data-size="">
+          Select or enter a ratio
+        </div>
+      </div>
+
+      <h2 style="margin-top:24px"><span>📏</span> Scale Calculator</h2>
+      <p style="font-size:.85rem;color:var(--text2);margin-bottom:12px">Lock a ratio, enter one dimension to get the other</p>
+      <div style="margin-bottom:12px">
+        <label for="scaleRatio">Aspect Ratio</label>
+        <input type="text" id="scaleRatio" placeholder="16:9" value="16:9">
+      </div>
+      <div class="input-row">
+        <div>
+          <label for="scaleW">Width</label>
+          <input type="number" id="scaleW" placeholder="Width" min="1">
+        </div>
+        <div class="x-label">→</div>
+        <div>
+          <label for="scaleH">Height</label>
+          <input type="number" id="scaleH" placeholder="Height" min="1">
+        </div>
+      </div>
+      <div id="scaleResult" class="scale-result" style="text-align:center;margin-top:12px"></div>
+    </div>
+  </div>
+
+  <!-- Resolution Reference -->
+  <div class="card">
+    <h2><span>📊</span> Resolution Reference Table</h2>
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="showTab('video',this)">🎬 Video</button>
+      <button class="tab-btn" onclick="showTab('screen',this)">🖥️ Screen</button>
+      <button class="tab-btn" onclick="showTab('photo',this)">📷 Photo</button>
+      <button class="tab-btn" onclick="showTab('social',this)">📱 Social Media</button>
+    </div>
+
+    <div class="tab-content active" id="tab-video">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Resolution</th><th>Ratio</th><th>Use Case</th></tr></thead>
+          <tbody>
+            <tr><td>SD (480p)</td><td>640 × 480</td><td>4:3</td><td>Legacy video</td></tr>
+            <tr><td>HD (720p)</td><td>1280 × 720</td><td>16:9</td><td>Web streaming</td></tr>
+            <tr><td>Full HD (1080p)</td><td>1920 × 1080</td><td>16:9</td><td>Standard broadcast</td></tr>
+            <tr><td>2K (1440p)</td><td>2560 × 1440</td><td>16:9</td><td>High-quality streaming</td></tr>
+            <tr><td>4K UHD</td><td>3840 × 2160</td><td>16:9</td><td>Ultra HD content</td></tr>
+            <tr><td>8K UHD</td><td>7680 × 4320</td><td>16:9</td><td>Next-gen displays</td></tr>
+            <tr><td>DCI 2K</td><td>2048 × 1080</td><td>~17:9</td><td>Cinema projection</td></tr>
+            <tr><td>DCI 4K</td><td>4096 × 2160</td><td>~17:9</td><td>Cinema projection</td></tr>
+            <tr><td>Ultrawide</td><td>2560 × 1080</td><td>21:9</td><td>Cinematic content</td></tr>
+            <tr><td>Ultrawide QHD</td><td>3440 × 1440</td><td>21:9</td><td>Cinematic gaming</td></tr>
+            <tr><td>Vertical Video</td><td>1080 × 1920</td><td>9:16</td><td>Mobile / Stories</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-screen">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Device / Standard</th><th>Resolution</th><th>Ratio</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>VGA</td><td>640 × 480</td><td>4:3</td><td>Legacy standard</td></tr>
+            <tr><td>XGA</td><td>1024 × 768</td><td>4:3</td><td>Classic monitors</td></tr>
+            <tr><td>WXGA</td><td>1366 × 768</td><td>~16:9</td><td>Budget laptops</td></tr>
+            <tr><td>Full HD</td><td>1920 × 1080</td><td>16:9</td><td>Most common</td></tr>
+            <tr><td>QHD</td><td>2560 × 1440</td><td>16:9</td><td>Gaming monitors</td></tr>
+            <tr><td>4K UHD</td><td>3840 × 2160</td><td>16:9</td><td>High-end displays</td></tr>
+            <tr><td>5K</td><td>5120 × 2880</td><td>16:9</td><td>Apple Studio Display</td></tr>
+            <tr><td>MacBook Air 13"</td><td>2560 × 1664</td><td>~3:2</td><td>Apple M-series</td></tr>
+            <tr><td>MacBook Pro 14"</td><td>3024 × 1964</td><td>~3:2</td><td>Liquid Retina XDR</td></tr>
+            <tr><td>MacBook Pro 16"</td><td>3456 × 2234</td><td>~3:2</td><td>Liquid Retina XDR</td></tr>
+            <tr><td>iPad Pro 12.9"</td><td>2048 × 2732</td><td>3:4</td><td>Tablet</td></tr>
+            <tr><td>Surface Pro</td><td>2880 × 1920</td><td>3:2</td><td>Microsoft tablet</td></tr>
+            <tr><td>Ultrawide</td><td>3440 × 1440</td><td>21:9</td><td>Productivity</td></tr>
+            <tr><td>Super Ultrawide</td><td>5120 × 1440</td><td>32:9</td><td>Samsung Odyssey</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-photo">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Format</th><th>Resolution</th><th>Ratio</th><th>Use Case</th></tr></thead>
+          <tbody>
+            <tr><td>Standard Photo</td><td>4000 × 3000</td><td>4:3</td><td>Most cameras default</td></tr>
+            <tr><td>DSLR Full Frame</td><td>6000 × 4000</td><td>3:2</td><td>Professional photography</td></tr>
+            <tr><td>Medium Format</td><td>8256 × 6192</td><td>4:3</td><td>High-end studio</td></tr>
+            <tr><td>Square</td><td>3000 × 3000</td><td>1:1</td><td>Instagram classic</td></tr>
+            <tr><td>Panoramic</td><td>6000 × 2000</td><td>3:1</td><td>Landscape panorama</td></tr>
+            <tr><td>iPhone Photo</td><td>4032 × 3024</td><td>4:3</td><td>Default iPhone camera</td></tr>
+            <tr><td>iPhone 16:9</td><td>4032 × 2268</td><td>16:9</td><td>iPhone widescreen mode</td></tr>
+            <tr><td>Print 4×6"</td><td>1800 × 1200</td><td>3:2</td><td>Standard print</td></tr>
+            <tr><td>Print 5×7"</td><td>2100 × 1500</td><td>7:5</td><td>Common print size</td></tr>
+            <tr><td>Print 8×10"</td><td>3000 × 2400</td><td>5:4</td><td>Portrait print</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-social">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Platform</th><th>Resolution</th><th>Ratio</th><th>Type</th></tr></thead>
+          <tbody>
+            <tr><td>YouTube Thumbnail</td><td>1280 × 720</td><td>16:9</td><td>Thumbnail</td></tr>
+            <tr><td>YouTube Video</td><td>1920 × 1080</td><td>16:9</td><td>Standard upload</td></tr>
+            <tr><td>YouTube Shorts</td><td>1080 × 1920</td><td>9:16</td><td>Short-form video</td></tr>
+            <tr><td>Instagram Post</td><td>1080 × 1080</td><td>1:1</td><td>Feed square</td></tr>
+            <tr><td>Instagram Portrait</td><td>1080 × 1350</td><td>4:5</td><td>Feed portrait</td></tr>
+            <tr><td>Instagram Story</td><td>1080 × 1920</td><td>9:16</td><td>Story / Reel</td></tr>
+            <tr><td>TikTok</td><td>1080 × 1920</td><td>9:16</td><td>Video</td></tr>
+            <tr><td>Twitter / X Post</td><td>1200 × 675</td><td>16:9</td><td>Image post</td></tr>
+            <tr><td>Twitter / X Header</td><td>1500 × 500</td><td>3:1</td><td>Profile banner</td></tr>
+            <tr><td>Facebook Post</td><td>1200 × 630</td><td>~1.9:1</td><td>Link preview</td></tr>
+            <tr><td>Facebook Cover</td><td>820 × 312</td><td>~2.6:1</td><td>Page cover</td></tr>
+            <tr><td>LinkedIn Post</td><td>1200 × 627</td><td>~1.9:1</td><td>Feed image</td></tr>
+            <tr><td>Pinterest Pin</td><td>1000 × 1500</td><td>2:3</td><td>Standard pin</td></tr>
+            <tr><td>Twitch Stream</td><td>1920 × 1080</td><td>16:9</td><td>Live stream</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>AI Aspect Ratio Calculator — Free online tool for developers, designers & creators</p>
+  <p style="margin-top:4px">Built with ❤️ | No data collected | Works offline</p>
+</footer>
+
+<script>
+// GCD for simplifying ratios
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a}
+
+// Simplify ratio
+function simplify(w,h){
+  if(!w||!h)return null;
+  const d=gcd(w,h);
+  return{w:w/d,h:h/d};
+}
+
+// Presets
+const presets=[
+  {label:'16:9',w:16,h:9,desc:'Widescreen'},
+  {label:'4:3',w:4,h:3,desc:'Classic'},
+  {label:'1:1',w:1,h:1,desc:'Square'},
+  {label:'9:16',w:9,h:16,desc:'Vertical'},
+  {label:'21:9',w:21,h:9,desc:'Ultrawide'},
+  {label:'3:2',w:3,h:2,desc:'DSLR'},
+  {label:'2:3',w:2,h:3,desc:'Portrait'},
+  {label:'4:5',w:4,h:5,desc:'Instagram'},
+  {label:'5:4',w:5,h:4,desc:'Print'},
+  {label:'32:9',w:32,h:9,desc:'Super UW'},
+  {label:'3:1',w:3,h:1,desc:'Panorama'},
+  {label:'7:5',w:7,h:5,desc:'Print 5×7'},
+];
+
+// Render presets
+const presetsEl=document.getElementById('presets');
+presets.forEach(p=>{
+  const btn=document.createElement('button');
+  btn.className='preset-btn';
+  btn.textContent=p.label;
+  btn.title=p.desc;
+  btn.onclick=()=>{
+    document.getElementById('calcW').value=p.w*100;
+    document.getElementById('calcH').value=p.h*100;
+    calculate();
+    document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  };
+  presetsEl.appendChild(btn);
+});
+
+// Calculate ratio
+function calculate(){
+  const w=parseInt(document.getElementById('calcW').value);
+  const h=parseInt(document.getElementById('calcH').value);
+  const display=document.getElementById('ratioDisplay');
+  const detail=document.getElementById('ratioDetail');
+  const copyBtn=document.getElementById('copyRatio');
+
+  if(!w||!h||w<=0||h<=0){
+    display.textContent='—';
+    detail.textContent='Enter width and height to calculate';
+    copyBtn.style.display='none';
+    updatePreview(null);
+    return;
+  }
+
+  const r=simplify(w,h);
+  display.textContent=r.w+':'+r.h;
+  const decimal=(w/h).toFixed(4);
+  detail.textContent=w+' × '+h+' = '+r.w+':'+r.h+' ('+decimal+')';
+  copyBtn.style.display='inline-block';
+
+  // Highlight matching preset
+  document.querySelectorAll('.preset-btn').forEach(btn=>{
+    const match=presets.find(p=>p.label===btn.textContent);
+    if(match&&match.w===r.w&&match.h===r.h){
+      btn.classList.add('active');
+    }else{
+      btn.classList.remove('active');
+    }
+  });
+
+  updatePreview(r);
+}
+
+// Update visual preview
+function updatePreview(r){
+  const rect=document.getElementById('previewRect');
+  if(!r){
+    rect.style.width='120px';
+    rect.style.height='80px';
+    rect.textContent='Select or enter a ratio';
+    rect.setAttribute('data-size','');
+    return;
+  }
+
+  const maxW=280,maxH=180;
+  let pw,ph;
+  if(r.w/r.h>=maxW/maxH){
+    pw=maxW;
+    ph=Math.round(maxW*r.h/r.w);
+  }else{
+    ph=maxH;
+    pw=Math.round(maxH*r.w/r.h);
+  }
+  pw=Math.max(pw,40);
+  ph=Math.max(ph,30);
+
+  rect.style.width=pw+'px';
+  rect.style.height=ph+'px';
+  rect.textContent=r.w+':'+r.h;
+  rect.setAttribute('data-size',pw+'×'+ph+'px preview');
+}
+
+// Copy ratio
+function copyRatio(){
+  const text=document.getElementById('ratioDisplay').textContent;
+  if(text&&text!=='—'){
+    navigator.clipboard.writeText(text).then(()=>{
+      const btn=document.getElementById('copyRatio');
+      btn.textContent='✅ Copied!';
+      setTimeout(()=>btn.textContent='📋 Copy',1500);
+    });
+  }
+}
+
+// Scale calculator
+function parseRatio(str){
+  const m=str.match(/^(\d+(?:\.\d+)?)\s*[:\/]\s*(\d+(?:\.\d+)?)$/);
+  if(m)return{w:parseFloat(m[1]),h:parseFloat(m[2])};
+  return null;
+}
+
+function scaleCalc(source){
+  const r=parseRatio(document.getElementById('scaleRatio').value);
+  const resultEl=document.getElementById('scaleResult');
+  if(!r){resultEl.textContent='Invalid ratio format (use W:H)';return}
+
+  const sw=document.getElementById('scaleW');
+  const sh=document.getElementById('scaleH');
+
+  if(source==='w'&&sw.value){
+    const w=parseFloat(sw.value);
+    const h=Math.round(w*r.h/r.w);
+    sh.value=h;
+    resultEl.textContent=w+' × '+h;
+  }else if(source==='h'&&sh.value){
+    const h=parseFloat(sh.value);
+    const w=Math.round(h*r.w/r.h);
+    sw.value=w;
+    resultEl.textContent=w+' × '+h;
+  }else{
+    resultEl.textContent='';
+  }
+}
+
+// Event listeners
+document.getElementById('calcW').addEventListener('input',calculate);
+document.getElementById('calcH').addEventListener('input',calculate);
+document.getElementById('scaleW').addEventListener('input',()=>scaleCalc('w'));
+document.getElementById('scaleH').addEventListener('input',()=>scaleCalc('h'));
+document.getElementById('scaleRatio').addEventListener('input',()=>{
+  const sw=document.getElementById('scaleW');
+  const sh=document.getElementById('scaleH');
+  if(sw.value)scaleCalc('w');
+  else if(sh.value)scaleCalc('h');
+});
+
+// Tabs
+function showTab(id,btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// Init with example
+document.getElementById('calcW').value=1920;
+document.getElementById('calcH').value=1080;
+calculate();
+</script>
+<script src="https://alwingulla.com/88/tag.min.js" data-zone="130747" async data-cfasync="false"></script>
+</body>
+</html>
